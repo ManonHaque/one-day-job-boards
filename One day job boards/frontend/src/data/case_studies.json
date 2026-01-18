@@ -1,0 +1,37 @@
+{
+  "caseStudies": [
+    {
+      "id": "cs-001",
+      "title": "Poster Design for CUET Club Event",
+      "category": "Design",
+      "problem": "Robotics Club needed a poster urgently for their workshop.",
+      "solution": "A CSE student designed a clean poster in Figma and delivered it within 3 hours.",
+      "timeToDeliver": 180,
+      "difficultyLevel": "Medium",
+      "tags": ["poster", "figma", "event", "design"],
+      "image": "/works/poster.png"
+    },
+    {
+      "id": "cs-002",
+      "title": "Python Bug Fix for EEE Project",
+      "category": "Programming",
+      "problem": "Sensor data logger script kept crashing during execution.",
+      "solution": "A student fixed the index error and optimized the loop.",
+      "timeToDeliver": 30,
+      "difficultyLevel": "Easy",
+      "tags": ["python", "bug fix", "script", "eee"],
+      "image": "/works/python_fix.png"
+    },
+    {
+      "id": "cs-003",
+      "title": "PPT Design for Presentation",
+      "category": "Presentation",
+      "problem": "A student needed a visually appealing 12-slide PPT for a project defense.",
+      "solution": "A junior created a clean, professional template with icons and animations.",
+      "timeToDeliver": 360,
+      "difficultyLevel": "Medium",
+      "tags": ["ppt", "presentation", "design", "academic"],
+      "image": "/works/ppt_design.png"
+    }
+  ]
+}

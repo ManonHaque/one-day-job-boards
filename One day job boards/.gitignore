@@ -1,0 +1,211 @@
+# Documentation Files
+*.md
+*.tex
+*.pdf
+
+# Batch Files
+*.bat
+*.cmd
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.hypothesis/
+*.cover
+.pytest_cache
+
+# Node/NPM
+node_modules/
+npm-debug.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.npm
+package-lock.json
+yarn.lock
+
+# IDE and Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+.editorconfig
+*.sublime-project
+*.sublime-workspace
+.vim/
+.emacs/
+
+# Environment Variables
+.env
+.env.local
+.env.*.local
+.env.production.local
+.env.development.local
+.env.test.local
+
+# OS Specific
+Thumbs.db
+.DS_Store
+.AppleDouble
+.LSOverride
+*.lnk
+.Trashes
+ehthumbs.db
+
+# IDE Generated
+.classpath
+.project
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+*.iml
+
+# Temporary Files
+*.tmp
+*.temp
+*.bak
+*.backup
+*~
+#*#
+.#*
+
+# Build Artifacts
+dist/
+build/
+*.o
+*.a
+*.so
+*.dylib
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.hypothesis/
+coverage.xml
+*,cover
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Caches
+.cache/
+.pytest_cache/
+__pycache__/
+
+# IDE Cache
+.vscode/
+.idea/
+*.swp
+
+# MacOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+ehthumbs.db
+
+# Linux
+.directory
+
+# Project Specific
+/.venv
+/venv
+backend/.env
+frontend/.env
+backend/test_database.db
+frontend/.next/
+frontend/out/
+
+# Python Virtual Environments
+venv/
+ENV/
+env/
+
+# Local development
+local_settings.py
+/site
+
+# Postman
+Postman/
+
+# Excel Files
+*.xlsx
+*.xls
+*.csv
+
+# Archives
+*.zip
+*.tar.gz
+*.rar
+*.7z
+
+# Compiler outputs
+*.o
+*.a
+*.so
+*.out
+
+# System
+.env
+.env.local
+config/local_settings.py
+
+# Frontend Build
+frontend/.next
+frontend/dist
+frontend/out
+
+# Backend Database
+backend/*.db
+backend/*.sqlite
+
+# Reports
+reports/
+coverage_html/
+
+# Temporary
+tmp/
+temp/
+*.tmp

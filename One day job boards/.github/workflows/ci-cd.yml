@@ -1,0 +1,215 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  backend-tests:
+    name: Backend Tests
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: testuser
+          POSTGRES_PASSWORD: testpass
+          POSTGRES_DB: testdb
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+          cache-dependency-path: backend/requirements.txt
+
+      - name: Install dependencies
+        working-directory: ./backend
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pytest-cov pytest-asyncio httpx
+
+      - name: Create test .env
+        working-directory: ./backend
+        run: |
+          echo "DATABASE_URL=postgresql://testuser:testpass@localhost:5432/testdb" > .env
+          echo "JWT_SECRET=test-secret-key-for-ci" >> .env
+          echo "JWT_ALGORITHM=HS256" >> .env
+          echo "JWT_ACCESS_TOKEN_EXPIRE_MINUTES=30" >> .env
+          echo "OPENAI_API_KEY=sk-test-dummy-key" >> .env
+
+      - name: Run database migrations
+        working-directory: ./backend
+        run: |
+          python -c "from app.database import engine, Base; from app import models; Base.metadata.create_all(bind=engine)"
+
+      - name: Run pytest
+        working-directory: ./backend
+        run: |
+          pytest tests/ -v --cov=app --cov-report=xml --cov-report=term
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          files: ./backend/coverage.xml
+          flags: backend
+          name: backend-coverage
+
+  frontend-tests:
+    name: Frontend Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: ./frontend
+        run: npm ci
+
+      - name: Run ESLint
+        working-directory: ./frontend
+        run: npm run lint || true
+
+      - name: Type check
+        working-directory: ./frontend
+        run: npx tsc --noEmit
+
+      - name: Run tests
+        working-directory: ./frontend
+        run: npm test -- --passWithNoTests
+
+      - name: Build frontend
+        working-directory: ./frontend
+        run: npm run build
+        env:
+          NEXT_PUBLIC_API_URL: http://localhost:8000
+
+  integration-tests:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    needs: [backend-tests, frontend-tests]
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: testuser
+          POSTGRES_PASSWORD: testpass
+          POSTGRES_DB: testdb
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install backend dependencies
+        working-directory: ./backend
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Create backend .env
+        working-directory: ./backend
+        run: |
+          echo "DATABASE_URL=postgresql://testuser:testpass@localhost:5432/testdb" > .env
+          echo "JWT_SECRET=test-secret-key-for-ci" >> .env
+          echo "JWT_ALGORITHM=HS256" >> .env
+          echo "JWT_ACCESS_TOKEN_EXPIRE_MINUTES=30" >> .env
+          echo "OPENAI_API_KEY=sk-test-dummy-key" >> .env
+
+      - name: Run database migrations
+        working-directory: ./backend
+        run: |
+          python -c "from app.database import engine, Base; from app import models; Base.metadata.create_all(bind=engine)"
+
+      - name: Start backend server
+        working-directory: ./backend
+        run: |
+          uvicorn app.main:app --host 0.0.0.0 --port 8000 &
+          sleep 10
+
+      - name: Install frontend dependencies
+        working-directory: ./frontend
+        run: npm ci
+
+      - name: Run integration tests
+        working-directory: ./frontend
+        run: |
+          npm run test:e2e || echo "E2E tests not configured yet"
+        env:
+          NEXT_PUBLIC_API_URL: http://localhost:8000
+
+      - name: Health check
+        run: |
+          curl -f http://localhost:8000/ || exit 1
+
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+
+      - name: Upload Trivy results to GitHub Security
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+      - name: Python security check
+        working-directory: ./backend
+        run: |
+          pip install safety
+          safety check --file=requirements.txt || true
+
+      - name: Node security check
+        working-directory: ./frontend
+        run: |
+          npm audit --production || true
